@@ -156,6 +156,9 @@ function DashboardContent() {
   )
 }
 
+// Force dynamic rendering since we use searchParams
+export const dynamic = 'force-dynamic'
+
 export default function Dashboard() {
   return (
     <Suspense fallback={

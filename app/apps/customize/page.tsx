@@ -214,6 +214,9 @@ function CustomizeContent() {
   )
 }
 
+// Force dynamic rendering since we use searchParams
+export const dynamic = 'force-dynamic'
+
 export default function CustomizePage() {
   return (
     <Suspense fallback={
