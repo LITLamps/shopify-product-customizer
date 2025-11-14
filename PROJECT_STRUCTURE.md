@@ -39,7 +39,6 @@ shopify-customizer/
 ├── postcss.config.js           # PostCSS configuration
 ├── PROJECT_STRUCTURE.md        # This file
 ├── QUICKSTART.md               # Quick start guide
-├── railway.json                # Railway deployment config
 ├── README.md                   # Main documentation
 ├── tailwind.config.ts          # Tailwind CSS configuration
 ├── tsconfig.json               # TypeScript configuration

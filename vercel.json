@@ -1,20 +1,4 @@
 {
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "regions": ["iad1"],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "SHOPIFY_API_KEY": "@shopify_api_key",
-    "SHOPIFY_API_SECRET": "@shopify_api_secret",
-    "SHOPIFY_SCOPES": "@shopify_scopes",
-    "SHOPIFY_REDIRECT_URI": "@shopify_redirect_uri",
-    "SHOPIFY_APP_URL": "@shopify_app_url",
-    "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "WEBHOOK_SECRET": "@webhook_secret"
-  }
+  "regions": ["iad1"]
 }
 

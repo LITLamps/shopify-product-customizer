@@ -14,10 +14,10 @@ A full-stack Shopify app that allows merchants to offer product customization to
 ## Tech Stack
 
 - **Frontend:** Next.js 14 (App Router), React, TypeScript, TailwindCSS
-- **Backend:** Next.js API Routes, Node.js
+- **Backend:** Next.js API Routes (Serverless Functions)
 - **Database:** PostgreSQL with Prisma ORM
 - **Storage:** Supabase Storage or AWS S3
-- **Hosting:** Vercel (frontend) + Railway (backend & DB)
+- **Hosting:** Vercel (full-stack deployment)
 
 ## Getting Started
 
@@ -100,19 +100,17 @@ shopify-customizer/
 
 ## Deployment
 
-### Vercel (Frontend)
+### Deploy to Vercel
+
+Since this is a Next.js application, both frontend and backend (API routes) are deployed together on Vercel. Next.js API routes work natively as serverless functions.
 
 1. Connect your GitHub repository to Vercel
 2. Add environment variables in Vercel dashboard
-3. Deploy
+3. Set up a PostgreSQL database (Vercel Postgres, Supabase, or external)
+4. Deploy
+5. Run database migrations: `npx prisma migrate deploy`
 
-### Railway (Backend & Database)
-
-1. Create a new Railway project
-2. Add PostgreSQL service
-3. Add Node.js service
-4. Set environment variables
-5. Deploy
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ## License
 

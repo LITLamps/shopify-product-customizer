@@ -1,33 +1,52 @@
 # Deployment Guide
 
-This guide will help you deploy the Shopify Product Customizer app to production.
+This guide will help you deploy the Shopify Product Customizer app to production on Vercel.
 
 ## Prerequisites
 
 - GitHub account
-- Vercel account (for frontend)
-- Railway account (for backend & database)
+- Vercel account
 - Shopify Partner account
+- PostgreSQL database (Vercel Postgres, Supabase, or any external Postgres)
 - Supabase account (for storage) or AWS account (for S3)
 
-## Step 1: Database Setup (Railway)
+## Step 1: Database Setup
 
-1. Go to [Railway](https://railway.app) and create a new project
-2. Add a PostgreSQL service
-3. Copy the `DATABASE_URL` connection string
-4. Run migrations:
-   ```bash
-   npx prisma migrate deploy
-   ```
+Choose one of the following options:
+
+### Option A: Vercel Postgres (Recommended)
+
+1. Go to your [Vercel Dashboard](https://vercel.com/dashboard)
+2. Create a new project or select an existing one
+3. Go to the Storage tab
+4. Create a Postgres database
+5. Copy the `DATABASE_URL` connection string from the database settings
+6. Note: Vercel Postgres uses connection pooling, which is perfect for serverless functions
+
+### Option B: Supabase Postgres
+
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Go to Project Settings → Database
+3. Copy the connection string (use the connection pooling URL for serverless)
+4. The connection pooling URL typically looks like: `postgresql://postgres:[PASSWORD]@[PROJECT_REF].supabase.co:6543/postgres?pgbouncer=true`
+
+### Option C: External PostgreSQL
+
+1. Set up a PostgreSQL database (AWS RDS, DigitalOcean, etc.)
+2. Copy the `DATABASE_URL` connection string
+3. For serverless functions, consider using a connection pooler like PgBouncer
 
 ## Step 2: Storage Setup
 
-### Option A: Supabase Storage
+### Option A: Supabase Storage (Recommended)
 
 1. Create a Supabase project at [supabase.com](https://supabase.com)
 2. Create a storage bucket named `customizer`
 3. Set bucket to public
-4. Copy your Supabase URL and keys
+4. Copy your Supabase URL and keys:
+   - Project URL: `https://xxx.supabase.co`
+   - Anon key: From Settings → API
+   - Service role key: From Settings → API (keep this secret!)
 
 ### Option B: AWS S3
 
@@ -40,55 +59,93 @@ This guide will help you deploy the Shopify Product Customizer app to production
 
 1. Go to [Shopify Partner Dashboard](https://partners.shopify.com)
 2. Create a new app
-3. Set App URL: `https://yourdomain.com`
-4. Set Allowed redirection URL(s): `https://yourdomain.com/auth/callback`
+3. Set App URL: `https://your-vercel-app.vercel.app` (or your custom domain)
+4. Set Allowed redirection URL(s): `https://your-vercel-app.vercel.app/auth/callback`
 5. Configure webhooks:
-   - `app/uninstalled` → `https://yourdomain.com/api/webhooks/app_uninstalled`
+   - `app/uninstalled` → `https://your-vercel-app.vercel.app/api/webhooks/app_uninstalled`
 6. Copy API Key and Secret
+7. Configure required scopes:
+   - `read_products`
+   - `write_products`
+   - `read_orders`
+   - `write_orders`
 
-## Step 4: Deploy Frontend (Vercel)
+## Step 4: Deploy to Vercel
+
+Since this is a Next.js application, both frontend and backend (API routes) will be deployed together on Vercel. Next.js API routes work natively as serverless functions on Vercel.
 
 1. Push your code to GitHub
-2. Import project in Vercel
-3. Add environment variables:
-   - `DATABASE_URL`
+2. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+3. Click "Add New" → "Project"
+4. Import your GitHub repository
+5. Vercel will auto-detect Next.js framework
+6. Configure build settings (usually auto-detected):
+   - Build Command: `npm run build`
+   - Output Directory: `.next`
+   - Install Command: `npm install`
+7. Add environment variables in Vercel dashboard:
+   - `DATABASE_URL` (from Step 1)
    - `SHOPIFY_API_KEY`
    - `SHOPIFY_API_SECRET`
-   - `SHOPIFY_SCOPES` (comma-separated)
+   - `SHOPIFY_SCOPES` (comma-separated, e.g., `read_products,write_products,read_orders,write_orders`)
    - `SHOPIFY_REDIRECT_URI` (your Vercel URL + `/auth/callback`)
    - `SHOPIFY_APP_URL` (your Vercel URL)
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `NEXT_PUBLIC_SUPABASE_URL` (if using Supabase storage)
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (if using Supabase storage)
+   - `SUPABASE_SERVICE_ROLE_KEY` (if using Supabase storage)
    - `WEBHOOK_SECRET` (generate a random string)
-4. Deploy
+   - `AWS_ACCESS_KEY_ID` (if using AWS S3 instead of Supabase)
+   - `AWS_SECRET_ACCESS_KEY` (if using AWS S3)
+   - `AWS_REGION` (if using AWS S3, e.g., `us-east-1`)
+   - `AWS_S3_BUCKET` (if using AWS S3)
+8. Deploy the project
+9. After deployment, run database migrations:
+   ```bash
+   # Set DATABASE_URL environment variable first
+   export DATABASE_URL="your-database-url"
+   npx prisma migrate deploy
+   ```
+   Or use Vercel CLI:
+   ```bash
+   vercel env pull .env.local
+   npx prisma migrate deploy
+   ```
 
-## Step 5: Deploy Backend (Railway - Optional)
+## Step 5: Update Shopify App URLs
 
-If you want to run a separate backend:
+1. After deployment, update your Shopify app settings with your Vercel production URLs
+2. Set:
+   - App URL: `https://your-vercel-app.vercel.app`
+   - Allowed redirection URL(s): `https://your-vercel-app.vercel.app/auth/callback`
+   - Webhook URL: `https://your-vercel-app.vercel.app/api/webhooks/app_uninstalled`
+3. Test the OAuth flow
+4. Install on a development store
 
-1. Add Node.js service to Railway project
-2. Set environment variables (same as Vercel)
-3. Deploy
+## Step 6: Run Database Migrations
 
-## Step 6: Update Shopify App URLs
+After your first deployment, you need to run database migrations to create the necessary tables:
 
-1. Update your Shopify app settings with the production URLs
-2. Test the OAuth flow
-3. Install on a development store
+```bash
+# Option 1: Using Vercel CLI
+vercel env pull .env.local
+npx prisma migrate deploy
+
+# Option 2: Directly with DATABASE_URL
+DATABASE_URL="your-database-url" npx prisma migrate deploy
+```
 
 ## Environment Variables Reference
 
 ```bash
 # Database
-DATABASE_URL=postgresql://...
+DATABASE_URL=postgresql://user:password@host:port/database
 
 # Shopify
 SHOPIFY_API_KEY=your_key
 SHOPIFY_API_SECRET=your_secret
 SHOPIFY_SCOPES=read_products,write_products,read_orders,write_orders
-SHOPIFY_REDIRECT_URI=https://yourdomain.com/auth/callback
-SHOPIFY_APP_URL=https://yourdomain.com
+SHOPIFY_REDIRECT_URI=https://your-vercel-app.vercel.app/auth/callback
+SHOPIFY_APP_URL=https://your-vercel-app.vercel.app
 
 # Storage (Supabase)
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
@@ -115,8 +172,34 @@ WEBHOOK_SECRET=random_string_here
 
 ## Troubleshooting
 
-- **OAuth errors**: Check redirect URI matches exactly
-- **Database errors**: Verify DATABASE_URL and run migrations
+- **OAuth errors**: Check redirect URI matches exactly (including protocol and trailing slashes)
+- **Database errors**: Verify DATABASE_URL and run migrations. For serverless, ensure you're using connection pooling
 - **Storage errors**: Check bucket permissions and keys
 - **Webhook errors**: Verify HMAC signature validation
+- **Build errors**: Check that all environment variables are set in Vercel dashboard
+- **Cold starts**: First request may be slower due to serverless cold starts. This is normal
 
+## Additional Notes
+
+### Vercel Serverless Functions
+
+- Next.js API routes automatically become serverless functions on Vercel
+- Each API route has a 10-second timeout on the Hobby plan, 60 seconds on Pro
+- Database connections should use connection pooling for better performance
+- Consider using `@vercel/postgres` or connection poolers for production
+
+### Database Connection Pooling
+
+For serverless functions, it's important to use connection pooling to avoid exhausting database connections:
+
+- **Vercel Postgres**: Automatically uses connection pooling
+- **Supabase**: Use the connection pooling URL (port 6543)
+- **Other providers**: Use PgBouncer or similar connection pooler
+
+### Custom Domain
+
+1. Go to your Vercel project settings
+2. Navigate to Domains
+3. Add your custom domain
+4. Update Shopify app URLs with your custom domain
+5. Update environment variables if needed
