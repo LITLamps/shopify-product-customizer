@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
@@ -10,7 +10,7 @@ interface Product {
   variants: Array<{ id: string; title: string; price: string }>
 }
 
-export default function Dashboard() {
+function DashboardContent() {
   const searchParams = useSearchParams()
   const shop = searchParams.get('shop')
   const [products, setProducts] = useState<Product[]>([])
@@ -18,17 +18,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const fetchLinkedProducts = async () => {
     if (!shop) {
       setError('Shop parameter missing')
       setLoading(false)
       return
     }
 
-    fetchLinkedProducts()
-  }, [shop])
-
-  const fetchLinkedProducts = async () => {
     try {
       const response = await fetch(`/api/products?shop=${shop}`)
       if (!response.ok) throw new Error('Failed to fetch products')
@@ -40,6 +36,11 @@ export default function Dashboard() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchLinkedProducts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shop])
 
   const handleLinkProduct = async (productId: string, variantId: string) => {
     try {
@@ -152,6 +153,18 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   )
 }
 

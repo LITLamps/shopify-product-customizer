@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 interface ProductDetails {
@@ -10,7 +10,7 @@ interface ProductDetails {
   shopVariantId: string | null
 }
 
-export default function CustomizePage() {
+function CustomizeContent() {
   const searchParams = useSearchParams()
   const shop = searchParams.get('shop')
   const productId = searchParams.get('productId')
@@ -23,13 +23,9 @@ export default function CustomizePage() {
   const [loadingProduct, setLoadingProduct] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (shop && productId) {
-      fetchProductDetails()
-    }
-  }, [shop, productId])
-
   const fetchProductDetails = async () => {
+    if (!shop || !productId) return
+    
     try {
       setLoadingProduct(true)
       const response = await fetch(`/api/product-details?shop=${shop}&productId=${productId}`)
@@ -42,6 +38,13 @@ export default function CustomizePage() {
       setLoadingProduct(false)
     }
   }
+
+  useEffect(() => {
+    if (shop && productId) {
+      fetchProductDetails()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shop, productId])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -186,6 +189,7 @@ export default function CustomizePage() {
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">Preview</h2>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={previewUrl}
                   alt="Preview"
@@ -207,6 +211,18 @@ export default function CustomizePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CustomizePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    }>
+      <CustomizeContent />
+    </Suspense>
   )
 }
 
