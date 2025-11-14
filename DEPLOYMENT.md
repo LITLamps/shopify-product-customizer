@@ -94,10 +94,7 @@ Since this is a Next.js application, both frontend and backend (API routes) will
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (if using Supabase storage)
    - `SUPABASE_SERVICE_ROLE_KEY` (if using Supabase storage)
    - `WEBHOOK_SECRET` (generate a random string)
-   - `AWS_ACCESS_KEY_ID` (if using AWS S3 instead of Supabase)
-   - `AWS_SECRET_ACCESS_KEY` (if using AWS S3)
-   - `AWS_REGION` (if using AWS S3, e.g., `us-east-1`)
-   - `AWS_S3_BUCKET` (if using AWS S3)
+   
 8. Deploy the project
 9. After deployment, run database migrations:
    ```bash
