@@ -41,48 +41,22 @@ export async function uploadImage(
   return urlData.publicUrl
 }
 
-export async function uploadImageToS3(
-  base64Data: string,
-  fileName: string,
-  folder: string = 'designs'
-): Promise<string> {
-  // Alternative S3 implementation
-  // Note: This requires @aws-sdk/client-s3 to be installed
-  // Install with: npm install @aws-sdk/client-s3
-  // 
-  // For now, this function is disabled to avoid build errors
-  // Uncomment and install the package if you want to use S3 instead of Supabase
-  throw new Error(
-    'S3 upload is not configured. Please install @aws-sdk/client-s3 and configure AWS credentials, ' +
-    'or use Supabase storage by setting NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'
-  )
-  
-  /* Uncomment when using S3:
-  const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3')
-  
-  const s3Client = new S3Client({
-    region: process.env.AWS_REGION || 'us-east-1',
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  })
-
-  const base64 = base64Data.replace(/^data:image\/\w+;base64,/, '')
-  const buffer = Buffer.from(base64, 'base64')
-  const fileExt = fileName.split('.').pop() || 'png'
-  const key = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-
-  const command = new PutObjectCommand({
-    Bucket: process.env.AWS_S3_BUCKET!,
-    Key: key,
-    Body: buffer,
-    ContentType: `image/${fileExt}`,
-    ACL: 'public-read',
-  })
-
-  await s3Client.send(command)
-  return `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${key}`
-  */
-}
+// S3 upload function removed - not used and caused build issues
+// To implement S3 upload in the future:
+// 1. Install: npm install @aws-sdk/client-s3
+// 2. Create a new function using the modern AWS SDK v3
+// Example implementation (save to a separate file when needed):
+//
+// import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+//
+// export async function uploadImageToS3(...) {
+//   const s3Client = new S3Client({
+//     region: process.env.AWS_REGION || 'us-east-1',
+//     credentials: {
+//       accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+//       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+//     },
+//   })
+//   // ... rest of implementation
+// }
 
