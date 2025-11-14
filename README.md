@@ -16,7 +16,7 @@ A full-stack Shopify app that allows merchants to offer product customization to
 - **Frontend:** Next.js 14 (App Router), React, TypeScript, TailwindCSS
 - **Backend:** Next.js API Routes (Serverless Functions)
 - **Database:** PostgreSQL with Prisma ORM
-- **Storage:** Supabase Storage or AWS S3
+- **Storage:** Supabase Storage
 - **Hosting:** Vercel (full-stack deployment)
 
 ## Getting Started
@@ -26,7 +26,7 @@ A full-stack Shopify app that allows merchants to offer product customization to
 - Node.js 18+ and npm
 - PostgreSQL database
 - Shopify Partner account
-- Supabase account (or AWS S3) for storage
+- Supabase account (for storage)
 
 ### Installation
 

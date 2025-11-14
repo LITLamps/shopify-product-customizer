@@ -27,7 +27,7 @@ shopify-customizer/
 ├── lib/                          # Utilities and helpers
 │   ├── prisma.ts                # Prisma client instance
 │   ├── shopify.ts               # Shopify API utilities
-│   └── storage.ts               # Storage (Supabase/S3) utilities
+│   └── storage.ts               # Storage utilities (Supabase)
 ├── prisma/
 │   └── schema.prisma            # Database schema
 ├── .env.example                 # Environment variables template
@@ -69,7 +69,7 @@ shopify-customizer/
 
 - **`lib/prisma.ts`**: Singleton Prisma client instance
 - **`lib/shopify.ts`**: Shopify API helpers (OAuth, checkout, products, webhooks)
-- **`lib/storage.ts`**: Image storage utilities (Supabase/S3)
+- **`lib/storage.ts`**: Image storage utilities (Supabase)
 
 ### Database Schema
 

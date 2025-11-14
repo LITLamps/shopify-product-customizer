@@ -41,22 +41,3 @@ export async function uploadImage(
   return urlData.publicUrl
 }
 
-// S3 upload function removed - not used and caused build issues
-// To implement S3 upload in the future:
-// 1. Install: npm install @aws-sdk/client-s3
-// 2. Create a new function using the modern AWS SDK v3
-// Example implementation (save to a separate file when needed):
-//
-// import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-//
-// export async function uploadImageToS3(...) {
-//   const s3Client = new S3Client({
-//     region: process.env.AWS_REGION || 'us-east-1',
-//     credentials: {
-//       accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-//       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-//     },
-//   })
-//   // ... rest of implementation
-// }
-

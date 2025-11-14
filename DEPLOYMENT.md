@@ -8,7 +8,7 @@ This guide will help you deploy the Shopify Product Customizer app to production
 - Vercel account
 - Shopify Partner account
 - PostgreSQL database (Vercel Postgres, Supabase, or any external Postgres)
-- Supabase account (for storage) or AWS account (for S3)
+- Supabase account (for storage)
 
 ## Step 1: Database Setup
 
@@ -36,9 +36,7 @@ Choose one of the following options:
 2. Copy the `DATABASE_URL` connection string
 3. For serverless functions, consider using a connection pooler like PgBouncer
 
-## Step 2: Storage Setup
-
-### Option A: Supabase Storage (Recommended)
+## Step 2: Storage Setup (Supabase)
 
 1. Create a Supabase project at [supabase.com](https://supabase.com)
 2. Create a storage bucket named `customizer`
@@ -47,13 +45,6 @@ Choose one of the following options:
    - Project URL: `https://xxx.supabase.co`
    - Anon key: From Settings → API
    - Service role key: From Settings → API (keep this secret!)
-
-### Option B: AWS S3
-
-1. Create an S3 bucket
-2. Set bucket policy for public read access
-3. Create IAM user with S3 access
-4. Copy access key and secret
 
 ## Step 3: Shopify App Configuration
 
@@ -90,9 +81,9 @@ Since this is a Next.js application, both frontend and backend (API routes) will
    - `SHOPIFY_SCOPES` (comma-separated, e.g., `read_products,write_products,read_orders,write_orders`)
    - `SHOPIFY_REDIRECT_URI` (your Vercel URL + `/auth/callback`)
    - `SHOPIFY_APP_URL` (your Vercel URL)
-   - `NEXT_PUBLIC_SUPABASE_URL` (if using Supabase storage)
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (if using Supabase storage)
-   - `SUPABASE_SERVICE_ROLE_KEY` (if using Supabase storage)
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
    - `WEBHOOK_SECRET` (generate a random string)
    
 8. Deploy the project
@@ -148,12 +139,6 @@ SHOPIFY_APP_URL=https://your-vercel-app.vercel.app
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
 SUPABASE_SERVICE_ROLE_KEY=your_key
-
-# Storage (AWS S3 - Alternative)
-AWS_ACCESS_KEY_ID=your_key
-AWS_SECRET_ACCESS_KEY=your_secret
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=your_bucket
 
 # Security
 WEBHOOK_SECRET=random_string_here

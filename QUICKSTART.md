@@ -8,7 +8,7 @@ Get your Shopify Product Customizer app up and running in minutes!
 - npm or yarn
 - PostgreSQL database (local or cloud)
 - Shopify Partner account
-- Supabase account (for storage) or AWS account (for S3)
+- Supabase account (for storage)
 
 ## Step 1: Clone and Install
 
@@ -47,7 +47,7 @@ SHOPIFY_REDIRECT_URI=http://localhost:3000/auth/callback
 SHOPIFY_APP_URL=http://localhost:3000
 ```
 
-### Storage (Supabase - Recommended)
+### Storage (Supabase)
 
 1. Create a project at [supabase.com](https://supabase.com)
 2. Create a storage bucket named `customizer`
