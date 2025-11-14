@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id              Int      @id @default(autoincrement())
+  shopDomain      String   @unique
+  accessToken     String
+  storefrontToken String?
+  installedAt     DateTime @default(now())
+  settings        Json?
+  products        Product[]
+  designs         Design[]
+
+  @@map("stores")
+}
+
+model Product {
+  id              Int      @id @default(autoincrement())
+  shopId          Int
+  shopProductId   String
+  shopVariantId   String?
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  store           Store    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  designs         Design[]
+
+  @@unique([shopId, shopProductId])
+  @@map("products")
+}
+
+model Design {
+  id          String   @id @default(cuid())
+  shopId      Int
+  productId   Int
+  imageUrl    String
+  thumbnail   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  store       Store    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("designs")
+}
+
