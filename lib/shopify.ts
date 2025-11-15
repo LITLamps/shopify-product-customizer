@@ -18,9 +18,25 @@ export const shopify = shopifyApi({
 })
 
 export function getShopifyAuthUrl(shop: string, redirectUri: string): string {
+  if (!apiKey) {
+    throw new Error('SHOPIFY_API_KEY is not configured')
+  }
+  
+  if (!scopes || scopes.length === 0) {
+    throw new Error('SHOPIFY_SCOPES is not configured')
+  }
+
   // Generate a random state for security
   const state = Math.random().toString(36).substring(7)
   
+  // Validate redirect URI format before building params
+  try {
+    new URL(redirectUri)
+  } catch {
+    throw new Error(`Invalid redirect URI: ${redirectUri}`)
+  }
+
+  // URLSearchParams will automatically URL-encode the redirect_uri
   const params = new URLSearchParams({
     client_id: apiKey,
     scope: scopes.join(','),

@@ -49,17 +49,31 @@ Choose one of the following options:
 ## Step 3: Shopify App Configuration
 
 1. Go to [Shopify Partner Dashboard](https://partners.shopify.com)
-2. Create a new app
-3. Set App URL: `https://your-vercel-app.vercel.app` (or your custom domain)
-4. Set Allowed redirection URL(s): `https://your-vercel-app.vercel.app/auth/callback`
-5. Configure webhooks:
+2. Create a new app (or edit existing app)
+3. **Important OAuth Settings** (must match exactly):
+   - **App URL**: `https://your-vercel-app.vercel.app` (or your custom domain)
+     - No trailing slash
+     - Must use `https://`
+   - **Allowed redirection URL(s)**: `https://your-vercel-app.vercel.app/auth/callback`
+     - Must match exactly (case-sensitive, no trailing slash)
+     - This is the OAuth callback URL
+   - **Note**: The redirect URI in your Vercel environment variable `SHOPIFY_APP_URL` must match this exactly
+
+4. Configure webhooks:
    - `app/uninstalled` → `https://your-vercel-app.vercel.app/api/webhooks/app_uninstalled`
-6. Copy API Key and Secret
-7. Configure required scopes:
+
+5. Copy API Key and Secret (these go into Vercel environment variables)
+
+6. Configure required scopes:
    - `read_products`
    - `write_products`
    - `read_orders`
    - `write_orders`
+
+**Critical**: If you get "accounts.shopify.com refused to connect" error, check:
+- The redirect URI in Shopify app settings matches exactly: `https://your-vercel-app.vercel.app/auth/callback`
+- The `SHOPIFY_APP_URL` environment variable in Vercel is set to: `https://your-vercel-app.vercel.app` (no trailing slash)
+- Both URLs use the same protocol (https) and domain
 
 ## Step 4: Deploy to Vercel
 
