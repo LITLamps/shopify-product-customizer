@@ -110,6 +110,38 @@ function DashboardContent() {
         {shop && (
           <>
             <div className="bg-white rounded-lg shadow p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Theme Customization</h2>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      id="theme-extension-enabled"
+                      className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                      defaultChecked
+                    />
+                    <span className="text-sm text-gray-600">Enable Theme Extension</span>
+                  </label>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                The AI Image Generator section can be added to any Shopify theme. 
+                Go to your theme editor → Add section → App embeds → AI Image Generator
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded p-4">
+                <h3 className="font-semibold text-blue-900 mb-2">How to Install in Theme:</h3>
+                <ol className="list-decimal list-inside text-sm text-blue-800 space-y-1">
+                  <li>Go to Shopify Admin → Online Store → Themes</li>
+                  <li>Click "Customize" on your active theme</li>
+                  <li>Click "Add section" → "App embeds"</li>
+                  <li>Select "AI Image Generator"</li>
+                  <li>Configure the section settings</li>
+                  <li>Save your changes</li>
+                </ol>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">Linked Products</h2>
               {linkedProducts.length === 0 ? (
                 <p className="text-gray-500">No products linked yet.</p>

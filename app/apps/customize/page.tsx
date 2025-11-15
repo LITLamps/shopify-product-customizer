@@ -21,6 +21,9 @@ function CustomizeContent() {
   const [error, setError] = useState<string | null>(null)
   const [productDetails, setProductDetails] = useState<ProductDetails | null>(null)
   const [loadingProduct, setLoadingProduct] = useState(true)
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [showAiPrompt, setShowAiPrompt] = useState(false)
+  const [themeMode, setThemeMode] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchProductDetails = async () => {
@@ -60,9 +63,44 @@ function CustomizeContent() {
   }
 
   const handleGenerateImage = async () => {
-    // Placeholder for image generation (like Lit Lamps Generator)
-    // You can integrate with DALL-E, Stable Diffusion, or other APIs
-    setError('Image generation not implemented yet. Please upload an image.')
+    if (!shop) {
+      setError('Shop parameter missing')
+      return
+    }
+
+    if (!aiPrompt.trim()) {
+      setShowAiPrompt(true)
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shop,
+          prompt: aiPrompt,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to generate image')
+      }
+
+      const { imageUrl } = await response.json()
+      setImageData(imageUrl)
+      setPreviewUrl(imageUrl)
+      setShowAiPrompt(false)
+      setAiPrompt('')
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate image. Please upload an image instead.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleCheckout = async () => {
@@ -155,7 +193,18 @@ function CustomizeContent() {
           )}
 
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Upload Your Design</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Customize Your Design</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={themeMode}
+                  onChange={(e) => setThemeMode(e.target.checked)}
+                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm text-gray-600">Theme Mode</span>
+              </label>
+            </div>
             
             <div className="space-y-4">
               <div>
@@ -168,7 +217,8 @@ function CustomizeContent() {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700"
+                  disabled={loading}
+                  className="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Upload Image
                 </button>
@@ -176,12 +226,45 @@ function CustomizeContent() {
 
               <div>
                 <button
-                  onClick={handleGenerateImage}
+                  onClick={() => setShowAiPrompt(!showAiPrompt)}
                   className="bg-purple-600 text-white px-6 py-3 rounded hover:bg-purple-700"
                 >
                   Generate Image (AI)
                 </button>
               </div>
+
+              {showAiPrompt && (
+                <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Describe the image you want to generate:
+                  </label>
+                  <textarea
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="e.g., A beautiful sunset over mountains with vibrant colors"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleGenerateImage}
+                      disabled={loading || !aiPrompt.trim()}
+                      className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      {loading ? 'Generating...' : 'Generate'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowAiPrompt(false)
+                        setAiPrompt('')
+                      }}
+                      className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
