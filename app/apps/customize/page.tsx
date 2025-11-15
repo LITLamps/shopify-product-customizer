@@ -22,6 +22,8 @@ function CustomizeContent() {
   const [productDetails, setProductDetails] = useState<ProductDetails | null>(null)
   const [loadingProduct, setLoadingProduct] = useState(true)
   const [aiPrompt, setAiPrompt] = useState('')
+  const [aiStyle, setAiStyle] = useState('')
+  const [negativePrompt, setNegativePrompt] = useState('')
   const [showAiPrompt, setShowAiPrompt] = useState(false)
   const [themeMode, setThemeMode] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -83,6 +85,8 @@ function CustomizeContent() {
         body: JSON.stringify({
           shop,
           prompt: aiPrompt,
+          style: aiStyle,
+          negativePrompt: negativePrompt,
         }),
       })
 
@@ -234,31 +238,78 @@ function CustomizeContent() {
               </div>
 
               {showAiPrompt && (
-                <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="border-2 border-purple-200 rounded-lg p-6 bg-gradient-to-br from-purple-50 to-indigo-50 shadow-lg">
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">
                     Describe the image you want to generate:
                   </label>
                   <textarea
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
-                    placeholder="e.g., A beautiful sunset over mountains with vibrant colors"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2"
+                    placeholder="e.g., A beautiful sunset over mountains with vibrant colors, artistic style"
+                    rows={4}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 mb-4 text-base"
                   />
-                  <div className="flex gap-2">
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Style (optional):
+                      </label>
+                      <select
+                        value={aiStyle}
+                        onChange={(e) => setAiStyle(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      >
+                        <option value="">Default</option>
+                        <option value="realistic">Realistic</option>
+                        <option value="artistic">Artistic</option>
+                        <option value="abstract">Abstract</option>
+                        <option value="vibrant">Vibrant</option>
+                        <option value="minimalist">Minimalist</option>
+                        <option value="3d render">3D Render</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Avoid (optional):
+                      </label>
+                      <input
+                        type="text"
+                        value={negativePrompt}
+                        onChange={(e) => setNegativePrompt(e.target.value)}
+                        placeholder="e.g., blurry, low quality"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
                     <button
                       onClick={handleGenerateImage}
                       disabled={loading || !aiPrompt.trim()}
-                      className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     >
-                      {loading ? 'Generating...' : 'Generate'}
+                      {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Generating...
+                        </span>
+                      ) : (
+                        'Generate Image'
+                      )}
                     </button>
                     <button
                       onClick={() => {
                         setShowAiPrompt(false)
                         setAiPrompt('')
+                        setAiStyle('')
+                        setNegativePrompt('')
                       }}
-                      className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                      className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
                     >
                       Cancel
                     </button>

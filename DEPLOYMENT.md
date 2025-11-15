@@ -1,47 +1,34 @@
 # Deployment Guide
 
-This guide will help you deploy the Shopify Product Customizer app to production on Vercel.
+This guide will help you deploy the Shopify Product Customizer app to production.
 
 ## Prerequisites
 
-- GitHub account
-- Vercel account
+- Node.js 18+ installed
+- PostgreSQL database (Supabase recommended)
 - Shopify Partner account
-- PostgreSQL database (Vercel Postgres, Supabase, or any external Postgres)
 - Supabase account (for storage)
+- Google Gemini API key (for AI image generation)
+- Optional: Stability AI API key (for image generation fallback)
 
-## Step 1: Database Setup
+## Step 1: Set Up Database (Supabase)
 
-Choose one of the following options:
+1. Go to [supabase.com](https://supabase.com) and create a new project
+2. Wait for the project to be provisioned
+3. Go to Settings → Database
+4. Copy your connection string (Connection Pooling recommended for serverless)
+5. Update the connection string format:
+   ```
+   postgresql://postgres:[YOUR-PASSWORD]@[PROJECT-REF].supabase.co:5432/postgres?pgbouncer=true
+   ```
 
-### Option A: Vercel Postgres (Recommended)
+## Step 2: Set Up Storage (Supabase)
 
-1. Go to your [Vercel Dashboard](https://vercel.com/dashboard)
-2. Create a new project or select an existing one
-3. Go to the Storage tab
-4. Create a Postgres database
-5. Copy the `DATABASE_URL` connection string from the database settings
-6. Note: Vercel Postgres uses connection pooling, which is perfect for serverless functions
-
-### Option B: Supabase Postgres
-
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Go to Project Settings → Database
-3. Copy the connection string (use the connection pooling URL for serverless)
-4. The connection pooling URL typically looks like: `postgresql://postgres:[PASSWORD]@[PROJECT_REF].supabase.co:6543/postgres?pgbouncer=true`
-
-### Option C: External PostgreSQL
-
-1. Set up a PostgreSQL database (AWS RDS, DigitalOcean, etc.)
-2. Copy the `DATABASE_URL` connection string
-3. For serverless functions, consider using a connection pooler like PgBouncer
-
-## Step 2: Storage Setup (Supabase)
-
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Create a storage bucket named `customizer`
-3. Set bucket to public
-4. Copy your Supabase URL and keys:
+1. In your Supabase project, go to Storage
+2. Create a new bucket named `customizer`
+3. Set it to **public**
+4. Configure CORS if needed
+5. Copy your Supabase URL and keys:
    - Project URL: `https://xxx.supabase.co`
    - Anon key: From Settings → API
    - Service role key: From Settings → API (keep this secret!)
@@ -75,7 +62,24 @@ Choose one of the following options:
 - The `SHOPIFY_APP_URL` environment variable in Vercel is set to: `https://your-vercel-app.vercel.app` (no trailing slash)
 - Both URLs use the same protocol (https) and domain
 
-## Step 4: Deploy to Vercel
+## Step 4: Get Google Gemini API Key
+
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy the API key (you'll add this to Vercel environment variables)
+
+## Step 5: Optional - Get Stability AI API Key (for image generation)
+
+If you want to use Stability AI as a fallback for image generation:
+
+1. Go to [Stability AI](https://platform.stability.ai/)
+2. Sign up for an account
+3. Navigate to API Keys
+4. Create a new API key
+5. Copy the key (optional, for fallback image generation)
+
+## Step 6: Deploy to Vercel
 
 Since this is a Next.js application, both frontend and backend (API routes) will be deployed together on Vercel. Next.js API routes work natively as serverless functions on Vercel.
 
@@ -98,6 +102,8 @@ Since this is a Next.js application, both frontend and backend (API routes) will
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
+   - `GEMINI_API_KEY` (from Step 4)
+   - `STABILITY_API_KEY` (optional, from Step 5)
    - `WEBHOOK_SECRET` (generate a random string)
    
 8. Deploy the project
@@ -113,7 +119,7 @@ Since this is a Next.js application, both frontend and backend (API routes) will
    npx prisma migrate deploy
    ```
 
-## Step 5: Update Shopify App URLs
+## Step 7: Update Shopify App URLs
 
 1. After deployment, update your Shopify app settings with your Vercel production URLs
 2. Set:
@@ -123,7 +129,7 @@ Since this is a Next.js application, both frontend and backend (API routes) will
 3. Test the OAuth flow
 4. Install on a development store
 
-## Step 6: Run Database Migrations
+## Step 8: Run Database Migrations
 
 After your first deployment, you need to run database migrations to create the necessary tables:
 
@@ -154,6 +160,10 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
 SUPABASE_SERVICE_ROLE_KEY=your_key
 
+# AI Image Generation
+GEMINI_API_KEY=your_google_gemini_api_key
+STABILITY_API_KEY=your_stability_ai_key (optional)
+
 # Security
 WEBHOOK_SECRET=random_string_here
 ```
@@ -163,8 +173,9 @@ WEBHOOK_SECRET=random_string_here
 1. Install app on development store
 2. Link a product in dashboard
 3. Test customization flow
-4. Verify checkout works
-5. Check webhook handling
+4. Test AI image generation
+5. Verify checkout works
+6. Check webhook handling
 
 ## Troubleshooting
 
@@ -173,6 +184,7 @@ WEBHOOK_SECRET=random_string_here
 - **Storage errors**: Check bucket permissions and keys
 - **Webhook errors**: Verify HMAC signature validation
 - **Build errors**: Check that all environment variables are set in Vercel dashboard
+- **AI Generation errors**: Ensure GEMINI_API_KEY is set. If using Stability AI fallback, ensure STABILITY_API_KEY is set
 - **Cold starts**: First request may be slower due to serverless cold starts. This is normal
 
 ## Additional Notes
@@ -188,14 +200,16 @@ WEBHOOK_SECRET=random_string_here
 
 For serverless functions, it's important to use connection pooling to avoid exhausting database connections:
 
-- **Vercel Postgres**: Automatically uses connection pooling
-- **Supabase**: Use the connection pooling URL (port 6543)
-- **Other providers**: Use PgBouncer or similar connection pooler
+```javascript
+// Use connection pooling URL from Supabase
+// Format: postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres?pgbouncer=true
+```
 
-### Custom Domain
+### AI Image Generation
 
-1. Go to your Vercel project settings
-2. Navigate to Domains
-3. Add your custom domain
-4. Update Shopify app URLs with your custom domain
-5. Update environment variables if needed
+The app uses Google Gemini API to enhance prompts and then generates images using:
+1. **Primary**: Gemini-enhanced prompts with Stability AI (if STABILITY_API_KEY is set)
+2. **Fallback**: Direct Stability AI generation
+3. **Future**: Google Imagen API (when available)
+
+Make sure to set `GEMINI_API_KEY` for the best results. Optionally set `STABILITY_API_KEY` for direct image generation.

@@ -57,19 +57,50 @@
             <label for="ai-prompt-{{ section.id }}">Describe the image you want to generate:</label>
             <textarea 
               id="ai-prompt-{{ section.id }}" 
-              placeholder="e.g., A beautiful sunset over mountains with vibrant colors"
+              placeholder="e.g., A beautiful sunset over mountains with vibrant colors, artistic style"
               rows="4"
             ></textarea>
+            
+            <div class="prompt-options">
+              <div class="option-group">
+                <label for="style-{{ section.id }}">Style (optional):</label>
+                <select id="style-{{ section.id }}" class="style-select">
+                  <option value="">Default</option>
+                  <option value="realistic">Realistic</option>
+                  <option value="artistic">Artistic</option>
+                  <option value="abstract">Abstract</option>
+                  <option value="vibrant">Vibrant</option>
+                  <option value="minimalist">Minimalist</option>
+                  <option value="3d render">3D Render</option>
+                </select>
+              </div>
+              
+              <div class="option-group">
+                <label for="negative-prompt-{{ section.id }}">Avoid (optional):</label>
+                <input 
+                  type="text" 
+                  id="negative-prompt-{{ section.id }}" 
+                  placeholder="e.g., blurry, low quality"
+                  class="negative-input"
+                />
+              </div>
+            </div>
+            
             <button class="generate-button" id="generate-btn-{{ section.id }}">
-              Generate Image
+              <span class="button-text">Generate Image</span>
+              <span class="button-loader hidden">Generating...</span>
             </button>
             <div class="loading-indicator hidden" id="loading-{{ section.id }}">
-              Generating your image...
+              <div class="spinner"></div>
+              <p>Creating your image with AI...</p>
             </div>
           </div>
           <div class="generated-preview hidden" id="generated-preview-{{ section.id }}">
             <img id="generated-image-{{ section.id }}" alt="Generated" />
-            <button class="use-image-button" id="use-generated-{{ section.id }}">Use This Image</button>
+            <div class="preview-actions">
+              <button class="use-image-button" id="use-generated-{{ section.id }}">Use This Image</button>
+              <button class="regenerate-button" id="regenerate-{{ section.id }}">Regenerate</button>
+            </div>
           </div>
         </div>
       {% endif %}
@@ -151,8 +182,14 @@
       return;
     }
 
+    const style = document.getElementById(`style-${sectionId}`)?.value || '';
+    const negativePrompt = document.getElementById(`negative-prompt-${sectionId}`)?.value || '';
+
     generateBtn.disabled = true;
+    generateBtn.querySelector('.button-text')?.classList.add('hidden');
+    generateBtn.querySelector('.button-loader')?.classList.remove('hidden');
     loadingIndicator.classList.remove('hidden');
+    generatedPreview.classList.add('hidden');
 
     try {
       const response = await fetch(`${appUrl}/api/generate-image`, {
@@ -160,12 +197,15 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           shop: shop,
-          prompt: prompt
+          prompt: prompt,
+          style: style,
+          negativePrompt: negativePrompt
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate image');
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.details || 'Failed to generate image');
       }
 
       const data = await response.json();
@@ -176,8 +216,16 @@
       alert('Error generating image: ' + error.message);
     } finally {
       generateBtn.disabled = false;
+      generateBtn.querySelector('.button-text')?.classList.remove('hidden');
+      generateBtn.querySelector('.button-loader')?.classList.add('hidden');
       loadingIndicator.classList.add('hidden');
     }
+  });
+
+  // Regenerate button
+  const regenerateBtn = document.getElementById(`regenerate-${sectionId}`);
+  regenerateBtn?.addEventListener('click', function() {
+    generateBtn?.click();
   });
 
   useGeneratedBtn?.addEventListener('click', function() {
@@ -316,7 +364,7 @@
 }
 
 .ai-prompt-container {
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
 }
 
@@ -324,63 +372,168 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
+  color: #333;
 }
 
 .ai-prompt-container textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 0.25rem;
+  border: 2px solid #ddd;
+  border-radius: 0.5rem;
   margin-bottom: 1rem;
   font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.ai-prompt-container textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.prompt-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.option-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.option-group label {
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+  color: #666;
+}
+
+.style-select,
+.negative-input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  font-family: inherit;
+}
+
+.style-select:focus,
+.negative-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
 }
 
 .generate-button {
   width: 100%;
-  padding: 0.75rem;
-  background: #8b5cf6;
+  padding: 1rem;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
   color: white;
   border: none;
-  border-radius: 0.25rem;
+  border-radius: 0.5rem;
   font-weight: 600;
+  font-size: 1.125rem;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3);
 }
 
 .generate-button:hover:not(:disabled) {
-  background: #7c3aed;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  box-shadow: 0 6px 12px rgba(139, 92, 246, 0.4);
+  transform: translateY(-2px);
 }
 
 .generate-button:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
+}
+
+.button-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .loading-indicator {
   text-align: center;
-  padding: 1rem;
+  padding: 2rem;
   color: #666;
+}
+
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #8b5cf6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .generated-preview {
   margin-top: 2rem;
   text-align: center;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .generated-preview img {
   max-width: 100%;
-  max-height: 500px;
+  max-height: 600px;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e5e7eb;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.use-image-button,
+.regenerate-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
   border-radius: 0.5rem;
-  margin-bottom: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
 .use-image-button {
-  padding: 0.75rem 1.5rem;
   background: #10b981;
   color: white;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
+}
+
+.use-image-button:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.regenerate-button {
+  background: #6366f1;
+  color: white;
+}
+
+.regenerate-button:hover {
+  background: #4f46e5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
 }
 
 .action-buttons {
