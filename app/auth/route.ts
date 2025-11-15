@@ -6,18 +6,18 @@ export async function GET(request: NextRequest) {
   const shop = searchParams.get('shop')
 
   if (!shop) {
-    return NextResponse.json(
-      { error: 'Missing shop parameter' },
-      { status: 400 }
-    )
+    // Redirect back to home with error message
+    const homeUrl = new URL('/', request.url)
+    homeUrl.searchParams.set('error', 'missing-shop')
+    return NextResponse.redirect(homeUrl.toString())
   }
 
   // Validate shop domain
   if (!shop.match(/^[a-zA-Z0-9][a-zA-Z0-9-]*\.myshopify\.com$/)) {
-    return NextResponse.json(
-      { error: 'Invalid shop domain' },
-      { status: 400 }
-    )
+    // Redirect back to home with error message
+    const homeUrl = new URL('/', request.url)
+    homeUrl.searchParams.set('error', 'invalid-shop')
+    return NextResponse.redirect(homeUrl.toString())
   }
 
   const redirectUri = `${process.env.SHOPIFY_APP_URL || process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
